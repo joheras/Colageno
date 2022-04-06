@@ -14,9 +14,9 @@ if (File.exists(dirOutput)==false) {
 
 
 files=getFileList(directory);
-names = newArray(files.length);
-areaExterior = newArray(files.length);
-areaCentro = newArray(files.length);
+names = newArray(files.length/2);
+areaExterior = newArray(files.length/2);
+areaCentro = newArray(files.length/2);
 
 rows = 0;
 
@@ -229,7 +229,7 @@ for (i=0; i<files.length; i++) {
 			}else{
 				areaCentro[rows]='-';
 			}
-			rows = rows+1;
+			
 
 			
 			saveAs("Tiff",dirOutput+File.separator+title2);
@@ -239,7 +239,9 @@ for (i=0; i<files.length; i++) {
 			if (File.exists(dirError)==false) {
   				File.makeDirectory(dirError); // new output folder
 			}
-
+			names[rows]=title2;
+			areaExterior[rows]='-';
+			areaCentro[rows]='-';
 			selectWindow(title2);
 			saveAs("Tiff",dirError+File.separator+title2);
 
@@ -247,7 +249,7 @@ for (i=0; i<files.length; i++) {
 		}
 		close();
 
-
+		rows = rows+1;
 
 	}
 
@@ -258,18 +260,11 @@ if(isOpen("Results")){
 	run("Close");
 }
 
+Table.create("results");
+Table.setColumn("Name", names);
+Table.setColumn("Area exterior", areaExterior);
+Table.setColumn("Area centro", areaCentro);
+Table.save(dirOutput+File.separator+"General.csv");
 
-
-for (i=0; i<rows; i++) {
-	setResult("Name", i, names[i]);
-	setResult("Area exterior", i, areaExterior[i]);
-	setResult("Area centro", i, areaCentro[i]); 
-}
-
-saveAs("Results", dirOutput+File.separator+"General.csv");
-if(isOpen("Results")){
-	selectWindow("Results");
-	run("Close");
-}
 
 print("Done!");
