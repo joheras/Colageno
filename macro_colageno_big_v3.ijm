@@ -253,6 +253,10 @@ for (i=0; i<files.length; i++) {
 
 }
 
+selectWindow("Results");
+run("Close" );
+
+
 
 for (i=0; i<rows; i++) {
 	setResult("Name", i, names[i]);
