@@ -42,7 +42,7 @@ function detectMainPart(title2,title,method){
 	
 
 	if(endsWith(files[i],"fluo.tif")){
-		run("Analyze Particles...", "size=10-Infinity circularity=0.08-1.00 exclude add");
+		run("Analyze Particles...", "size=5-Infinity circularity=0.08-1.00 exclude add");
 	}else{
 		run("Analyze Particles...", "size=50000-Infinity circularity=0.1-1.00 exclude add");
 	}
