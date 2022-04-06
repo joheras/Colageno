@@ -1,144 +1,276 @@
 batchMode=true;
 outputFolder="_Output";
+errorFolder="_Error";
 
 setBatchMode(batchMode);
 directory = getDirectory("Choose folder with the images"); 
 dirParent = File.getParent(directory);
 dirName = File.getName(directory);
 dirOutput = dirParent+File.separator+dirName+outputFolder;
+dirError = dirParent+File.separator+dirName+errorFolder;
 if (File.exists(dirOutput)==false) {
   	File.makeDirectory(dirOutput); // new output folder
 }
+
+
 files=getFileList(directory);
+names = newArray(files.length/2);
+areaExterior = newArray(files.length/2);
+areaCentro = newArray(files.length/2);
+
+rows = 0;
+
+
+function detectMainPart(title2,title,method){
+	selectWindow(title2);
+	run("Duplicate...", " ");
+	rename("dup_"+title2);
+	run("8-bit");
+
+	
+	//run("Sharpen");
+	run("Variance...", "radius=5");
+	setAutoThreshold(method+" dark no-reset");
+	setOption("BlackBackground", false);
+	run("Convert to Mask");
+	//run("Dilate");
+	run("Fill Holes");
+	//run("Erode");
+	roiManager("Select", 0);
+	run("Enlarge...", "enlarge=500 pixel");
+	run("Clear Outside");
+	
+
+	if(endsWith(files[i],"fluo.tif")){
+		run("Analyze Particles...", "size=5-Infinity circularity=0.08-1.00 exclude add");
+	}else{
+		run("Analyze Particles...", "size=50000-Infinity circularity=0.1-1.00 exclude add");
+	}
+		
+	
+	close();
+	
+	
+}
+
+
+function detectMainPartv2(title2,title){
+	selectWindow(title2);
+	run("Duplicate...", " ");
+	rename("dup_"+title2);
+	run("8-bit");
+
+	
+	run("Subtract Background...", "rolling=100 light sliding disable");
+	run("Minimum...", "radius=11");
+	setAutoThreshold("Default no-reset");
+	setOption("BlackBackground", false);
+	run("Convert to Mask");
+	//run("Dilate");
+	run("Fill Holes");
+	run("Erode");
+	roiManager("Select", 0);
+	run("Enlarge...", "enlarge=500 pixel");
+	run("Clear Outside");
+
+	if(endsWith(files[i],"fluo.tif")){
+		run("Analyze Particles...", "size=10-Infinity circularity=0.05-1.00 exclude add");
+	}else{
+		run("Analyze Particles...", "size=50000-Infinity circularity=0.05-1.00 exclude add");
+	}
+		
+	
+	
+	close();
+	
+}
+
+
+function detectCenter(title2){
+	selectWindow(title2);
+
+	run("Duplicate...", " ");
+	rename("dup_"+title2);
+	run("8-bit");
+	roiManager("Select", 0);
+	setAutoThreshold("Huang no-reset");
+	run("Convert to Mask");
+	roiManager("Select", 0);
+	run("Clear Outside");
+	if(endsWith(files[i],"fluo.tif")){
+		run("Analyze Particles...", "size=1-Infinity circularity=0.00-1.00 add");
+	}else{
+		run("Analyze Particles...", "size=10000-Infinity circularity=0.00-1.00 add");
+	}
+
+	//close();	
+
+}
+
+
 
 
 for (i=0; i<files.length; i++) {
 
-	if(endsWith(files[i],"fluo.tif"))
+	if((endsWith(files[i],"fluo.tif")) || (endsWith(files[i],"fluo.png")))
 	{
-		print(files[i]);
+
+
 		open(directory+File.separator+files[i]);
-		title1=getTitle();
+		title=getTitle();
 		run("8-bit");
-
-		open(directory+File.separator+files[i].replace("fluo.tif",".tif"));
-		title2=getTitle();
-		
-		run("Duplicate...", " ");
-		rename("dup_"+title2);
-		selectWindow("dup_"+title2);
-		run("8-bit");
-
-		imageCalculator("Subtract create", "dup_"+title2,title1);
-		selectWindow("Result of "+"dup_"+title2);
-		run("Duplicate...", " ");
-		rename("dup_"+"Result of "+"dup_"+title2);
-		
-		setAutoThreshold("Default no-reset");
+		setAutoThreshold("MaxEntropy dark no-reset");
 		setOption("BlackBackground", false);
 		run("Convert to Mask");
+		if(endsWith(files[i],"fluo.tif")){
+			run("Analyze Particles...", "size=1.00-Infinity add");
+		
+		}else{
+			run("Analyze Particles...", "size=10000-Infinity add");
+		}
+		
+		run("Find Edges");
 
-		run("Analyze Particles...", "size=0.1-Infinity exclude add");
+		
 
-		n = roiManager('count');
-
-		if(n==0){
-			selectWindow("Result of "+"dup_"+title2);
-
-			setAutoThreshold("Li no-reset");
-			setOption("BlackBackground", false);
-			run("Convert to Mask");
-	
-			run("Analyze Particles...", "size=0.1-Infinity exclude add");
-			selectWindow("Result of "+"dup_"+title2);
-			close();
+		if(endsWith(files[i],"fluo.tif")){
+			open(directory+File.separator+files[i].replace("fluo.tif",".tif"));
+		
+		}else{
+			open(directory+File.separator+files[i].replace("fluo.png",".png"));
 		}
 
-		roiManager("Select", 0);
-		roiManager("Rename", "all");
+		
 		
 
-		selectWindow("dup_"+"Result of "+"dup_"+title2);
-		close();
-		selectWindow(title1);
-		close();
-		selectWindow("dup_"+title2);
-		close();
 		
-		selectWindow(title2);
-		run("Duplicate...", " ");
-		rename("dup_"+title2);
-		selectWindow("dup_"+title2);
-		
-		run("8-bit");
-		run("Enhance Contrast...", "saturated=0.3");
-		setAutoThreshold("Default no-reset");
-		setOption("BlackBackground", false);
-		run("Convert to Mask");
-		run("Dilate");
-		run("Fill Holes");
-		//run("Erode");
-		run("Analyze Particles...", "size=0.1-Infinity exclude add");
-		selectWindow("dup_"+title2);
-		close();
-		roiManager("Deselect");
 
-
-
-
-		selectWindow(title2);
-		run("Duplicate...", " ");
-		rename("dup_"+title2);
-		selectWindow("dup_"+title2);
-		roiManager("Select", 0);
-		run("Enlarge...", "enlarge=100 pixel");
-		roiManager("Add");
-
+		print(files[i]);
+		title2=getTitle();
+		detectMainPart(title2,title,"Otsu");
 		n = roiManager('count');
-		roiManager("Select", newArray(0,n-1));
-		roiManager("XOR");
-		run("Find Maxima...", "prominence=15 strict light output=[Point Selection]");
-		roiManager("Deselect");
-		roiManager("Add");
 		
 		
 		n = roiManager('count');
-		roiManager("Select", n-2);
+		if(n==1){
+			detectMainPart(title2,title,"Minimum");
+		}
+		n = roiManager('count');
+		
+
+
+		
+		n = roiManager('count');
+		if(n==1){
+			detectMainPart(title2,title,"MaxEntropy");
+		}
+		n = roiManager('count');
+
+
+
+		
+		n = roiManager('count');
+		if(n==1){
+			detectMainPartv2(title2,title);
+		}
+		selectWindow(title);
+		close();
+
+		
+		roiManager("Select", 0);
 		roiManager("Delete");
 		
-		n = roiManager('count');
-		roiManager("Select", n-1);
-		roiManager("Rename", "points");
-
 		
-		roiManager("Select", 0);
-		setForegroundColor(0, 0, 255);
-		roiManager("Draw");
 		n = roiManager('count');
-		if(n==3){
-			roiManager("Select", 1);
-			roiManager("Rename", "center");
-			setForegroundColor(255, 0, 0);
-			roiManager("Draw");
-			
+
+
+		// Keeping biggest ROI
+		if(n>1){
+			roiManager("Select", 0);
+			getStatistics(maxArea);
+			index = 0;
+			for(j=1;j<n;j++){
+				getStatistics(area);
+				if(maxArea<area){
+					maxArea = area;
+					index = j;	
+				}
+			}
+			roiManager("Select", index);
+			roiManager("add");
+		
+
+			for(k=n-1;k>=0;k--){
+				roiManager("Select", index);
+				roiManager("Delete");
+			}
 		}
-		
-		roiManager("Select", n-1);
-		setForegroundColor(0, 255, 0);
-		roiManager("Draw");
-		
-		saveAs("Tiff",dirOutput+File.separator+title2);
-		roiManager("Save", dirOutput+File.separator+title2+".zip");
+
 
 		
-		
-		
-		roiManager("reset");
+		if(n>0){
+			names[rows]=title2;
+			
+			
+			
+			run("Select None");
+			detectCenter(title2);
+			selectWindow(title2);
+
+
+			n = roiManager('count');
+			roiManager("Select", 0);
+			getStatistics(areaExterior[rows]);
+			
+			
+			roiManager("Rename", "all");
+			setForegroundColor(0, 0, 255);
+			roiManager("Draw");
+			if(n>1){
+				roiManager("Select", 1);
+				getStatistics(areaCentro[rows]);
+				roiManager("Rename", "centre");
+				setForegroundColor(0, 255, 0);
+				roiManager("Draw");
+			}else{
+				areaCentro[rows]='-';
+			}
+			
+
+			
+			saveAs("Tiff",dirOutput+File.separator+title2);
+			roiManager("Save", dirOutput+File.separator+title2+".zip");
+			roiManager("reset");
+		}else{
+			if (File.exists(dirError)==false) {
+  				File.makeDirectory(dirError); // new output folder
+			}
+			names[rows]=title2;
+			areaExterior[rows]='-';
+			areaCentro[rows]='-';
+			selectWindow(title2);
+			saveAs("Tiff",dirError+File.separator+title2);
+
+			print("error");
+		}
 		close();
 
-		
-		
+		rows = rows+1;
+
 	}
+
 }
+
+if(isOpen("Results")){
+	selectWindow("Results");
+	run("Close");
+}
+
+Table.create("results");
+Table.setColumn("Name", names);
+Table.setColumn("Area exterior", areaExterior);
+Table.setColumn("Area centro", areaCentro);
+Table.save(dirOutput+File.separator+"General.csv");
+
 
 print("Done!");
