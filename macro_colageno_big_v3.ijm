@@ -253,8 +253,10 @@ for (i=0; i<files.length; i++) {
 
 }
 
-selectWindow("Results");
-run("Close" );
+if(isOpen("Results")){
+	selectWindow("Results");
+	run("Close");
+}
 
 
 
