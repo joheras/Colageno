@@ -14,7 +14,11 @@ if (File.exists(dirOutput)==false) {
 
 
 files=getFileList(directory);
+names = newArray(files.length);
+areaExterior = newArray(files.length);
+areaCentro = newArray(files.length);
 
+rows = 0;
 
 
 function detectMainPart(title2,title,method){
@@ -199,6 +203,9 @@ for (i=0; i<files.length; i++) {
 
 		
 		if(n>0){
+			names[rows]=title2;
+			
+			
 			
 			run("Select None");
 			detectCenter(title2);
@@ -207,15 +214,22 @@ for (i=0; i<files.length; i++) {
 
 			n = roiManager('count');
 			roiManager("Select", 0);
+			getStatistics(areaExterior[rows]);
+			
+			
 			roiManager("Rename", "all");
 			setForegroundColor(0, 0, 255);
 			roiManager("Draw");
 			if(n>1){
 				roiManager("Select", 1);
+				getStatistics(areaCentro[rows]);
 				roiManager("Rename", "centre");
 				setForegroundColor(0, 255, 0);
 				roiManager("Draw");
+			}else{
+				areaCentro[rows]='-';
 			}
+			rows = rows+1;
 
 			
 			saveAs("Tiff",dirOutput+File.separator+title2);
@@ -240,7 +254,16 @@ for (i=0; i<files.length; i++) {
 }
 
 
+for (i=0; i<rows; i++) {
+	setResult("Name", i, names[i]);
+	setResult("Area exterior", i, areaExterior[i]);
+	setResult("Area centro", i, areaCentro[i]); 
+}
 
-
+saveAs("Results", dirOutput+File.separator+"General.csv");
+if(isOpen("Results")){
+	selectWindow("Results");
+	run("Close");
+}
 
 print("Done!");
